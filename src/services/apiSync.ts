@@ -1,6 +1,6 @@
 import { db } from '../db';
 
-const API_BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:5000/api';
+const API_BASE_URL = import.meta.env.VITE_API_URL || 'https://hanut-server.vercel.app/api';
 
 export async function syncLocalDBToMongoDB(): Promise<boolean> {
   try {
@@ -25,7 +25,7 @@ export async function syncLocalDBToMongoDB(): Promise<boolean> {
     const data = await response.json();
     return data.success;
   } catch (err) {
-    // Offline or server not reached: silent fallback to local IndexedDB
+    // Silent offline fallback
     return false;
   }
 }
