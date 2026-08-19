@@ -1,0 +1,7 @@
+# Hanut Shop Product Catalog - User Provided List
+
+1. Product Name: Huile SIOF 5L (زيت سيوف 5 لتر)
+   - Category: pantry (المواد الغذائية)
+   - Price: 83.00 MAD (83 DH)
+   - Image File: /products/siof_5l.png
+   - Date Added: 2026-08-19
