@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import type { Product } from '../../types';
 import { useLanguage } from '../../context/LanguageContext';
+import { useCurrency } from '../../context/CurrencyContext';
 import { Plus, Minus, Flame } from 'lucide-react';
 
 interface ProductTileProps {
@@ -19,6 +20,7 @@ export const ProductTile: React.FC<ProductTileProps> = ({
   isPopular
 }) => {
   const { language, t } = useLanguage();
+  const { formatAmount } = useCurrency();
   const [imageLoaded, setImageLoaded] = useState<boolean>(true);
 
   const displayName = language === 'ar' ? product.name_ar || product.name : product.name;
@@ -89,7 +91,7 @@ export const ProductTile: React.FC<ProductTileProps> = ({
         <div className="flex items-center justify-between mt-2 pt-2 border-t border-slate-100 dark:border-slate-800/80">
           <div className="flex flex-col">
             <span className="text-base font-black text-emerald-600 dark:text-emerald-400 tracking-tight dir-ltr">
-              {product.price.toFixed(2)} <span className="text-[11px] font-normal text-slate-500 dark:text-slate-400">{t.currency}</span>
+              {formatAmount(product.price)}
             </span>
             <span className="text-[10px] text-slate-400 dark:text-slate-500">
               {product.stock_quantity} {t.qty}

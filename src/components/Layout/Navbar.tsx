@@ -17,8 +17,10 @@ import {
   Sun,
   Moon,
   Cloud,
-  CheckCircle2
+  CheckCircle2,
+  Coins
 } from 'lucide-react';
+import { useCurrency } from '../../context/CurrencyContext';
 
 export type ActiveTab = 'pos' | 'credit' | 'catalog' | 'reports' | 'settings';
 
@@ -31,6 +33,7 @@ export const Navbar: React.FC<NavbarProps> = ({ activeTab, setActiveTab }) => {
   const { t, language, setLanguage } = useLanguage();
   const { lockApp } = useAuth();
   const { theme, toggleTheme } = useTheme();
+  const { currencyMode, setCurrencyMode } = useCurrency();
 
   const [isSyncing, setIsSyncing] = useState<boolean>(false);
   const [syncSuccess, setSyncSuccess] = useState<boolean>(false);
@@ -123,6 +126,16 @@ export const Navbar: React.FC<NavbarProps> = ({ activeTab, setActiveTab }) => {
 
           {/* Top Right Quick Actions */}
           <div className="flex items-center gap-1.5">
+            {/* MAD ⇄ RYAL Currency Switcher Pill */}
+            <button
+              onClick={() => setCurrencyMode(currencyMode === 'MAD' ? 'RYAL' : 'MAD')}
+              className="px-2.5 py-1.5 rounded-xl bg-amber-500/10 hover:bg-amber-500/20 text-amber-700 dark:text-amber-400 border border-amber-500/30 text-xs font-black flex items-center gap-1 transition-all shadow-sm active:scale-95 cursor-pointer"
+              title="تغيير وحدة العملة بين الدرهم (MAD) والريال (Ryal - 1MAD=20Ryal)"
+            >
+              <Coins className="w-3.5 h-3.5 text-amber-500" />
+              <span>{currencyMode === 'MAD' ? 'د.م (MAD)' : 'ريال (20x)'}</span>
+            </button>
+
             {/* MongoDB Cloud Sync Button */}
             <button
               onClick={handleManualSync}

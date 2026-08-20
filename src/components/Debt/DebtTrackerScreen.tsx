@@ -18,9 +18,11 @@ import {
   EyeOff
 } from 'lucide-react';
 import { syncLocalDBToMongoDB } from '../../services/apiSync';
+import { useCurrency } from '../../context/CurrencyContext';
 
 export const DebtTrackerScreen: React.FC = () => {
   const { t, dir } = useLanguage();
+  const { formatAmount } = useCurrency();
   const [searchTerm, setSearchTerm] = useState<string>('');
   const [sortBy, setSortBy] = useState<'debt' | 'name'>('debt');
   const [selectedCustomer, setSelectedCustomer] = useState<Customer | null>(null);
@@ -98,8 +100,7 @@ export const DebtTrackerScreen: React.FC = () => {
               </span>
             </div>
             <span className="text-2xl font-black text-rose-600 dark:text-rose-400 font-mono tracking-tight dir-ltr">
-              {showAmounts ? totalDebtSum.toFixed(2) : '••••••'}{' '}
-              <span className="text-xs text-slate-400">{t.currency}</span>
+              {showAmounts ? formatAmount(totalDebtSum) : '••••••'}
             </span>
           </div>
           <div className="w-12 h-12 rounded-2xl bg-rose-500/10 border border-rose-500/20 flex items-center justify-center text-rose-600 dark:text-rose-400 group-hover:scale-110 transition-transform">
@@ -267,10 +268,7 @@ export const DebtTrackerScreen: React.FC = () => {
                       }`}
                     >
                       {showAmounts ? (
-                        <>
-                          {customer.total_owed.toFixed(2)}{' '}
-                          <span className="text-xs font-normal text-slate-400">{t.currency}</span>
-                        </>
+                        formatAmount(customer.total_owed)
                       ) : (
                         <span className="text-slate-400 text-xs font-bold">•••••• (انقر للتفاصيل)</span>
                       )}

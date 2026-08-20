@@ -45,15 +45,19 @@ const MainApp: React.FC = () => {
   );
 };
 
+import { CurrencyProvider } from './context/CurrencyContext';
+
 export function App() {
   return (
     <ThemeProvider>
       <LanguageProvider>
-        <AuthProvider>
-          <CartProvider>
-            <MainApp />
-          </CartProvider>
-        </AuthProvider>
+        <CurrencyProvider>
+          <AuthProvider>
+            <CartProvider>
+              <MainApp />
+            </CartProvider>
+          </AuthProvider>
+        </CurrencyProvider>
       </LanguageProvider>
     </ThemeProvider>
   );

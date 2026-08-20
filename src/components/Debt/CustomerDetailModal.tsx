@@ -14,6 +14,7 @@ import {
   Receipt
 } from 'lucide-react';
 import { syncLocalDBToMongoDB } from '../../services/apiSync';
+import { useCurrency } from '../../context/CurrencyContext';
 
 interface CustomerDetailModalProps {
   customer: Customer;
@@ -22,6 +23,7 @@ interface CustomerDetailModalProps {
 
 export const CustomerDetailModal: React.FC<CustomerDetailModalProps> = ({ customer, onClose }) => {
   const { t } = useLanguage();
+  const { formatAmount } = useCurrency();
   const [paymentAmount, setPaymentAmount] = useState<string>('');
   const [paymentNotes, setPaymentNotes] = useState<string>('');
   const [showPaymentForm, setShowPaymentForm] = useState<boolean>(false);
@@ -145,7 +147,7 @@ export const CustomerDetailModal: React.FC<CustomerDetailModalProps> = ({ custom
               {t.total_debt}
             </span>
             <span className="text-3xl font-black text-rose-600 dark:text-rose-400 font-mono dir-ltr">
-              {currentCustomer.total_owed.toFixed(2)} <span className="text-xs text-slate-400">{t.currency}</span>
+              {formatAmount(currentCustomer.total_owed)}
             </span>
           </div>
 
