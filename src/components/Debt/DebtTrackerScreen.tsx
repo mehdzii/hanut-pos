@@ -25,7 +25,7 @@ export const DebtTrackerScreen: React.FC = () => {
   const [sortBy, setSortBy] = useState<'debt' | 'name'>('debt');
   const [selectedCustomer, setSelectedCustomer] = useState<Customer | null>(null);
   const [showAddModal, setShowAddModal] = useState<boolean>(false);
-  const [showAmounts, setShowAmounts] = useState<boolean>(true); // Default: SHOW numbers
+  const [showAmounts, setShowAmounts] = useState<boolean>(false); // Hidden by default (••••••)
 
   // New Customer Form State
   const [newName, setNewName] = useState<string>('');
