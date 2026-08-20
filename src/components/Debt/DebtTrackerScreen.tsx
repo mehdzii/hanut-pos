@@ -25,7 +25,7 @@ export const DebtTrackerScreen: React.FC = () => {
   const [sortBy, setSortBy] = useState<'debt' | 'name'>('debt');
   const [selectedCustomer, setSelectedCustomer] = useState<Customer | null>(null);
   const [showAddModal, setShowAddModal] = useState<boolean>(false);
-  const [showAmounts, setShowAmounts] = useState<boolean>(false); // Privacy mode default: HIDDEN
+  const [showAmounts, setShowAmounts] = useState<boolean>(true); // Default: SHOW numbers
 
   // New Customer Form State
   const [newName, setNewName] = useState<string>('');
@@ -84,26 +84,25 @@ export const DebtTrackerScreen: React.FC = () => {
       <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
         
         {/* Total Owed Card (Masked in Privacy Mode) */}
-        <div className="glass-panel p-4 rounded-3xl border border-slate-200 dark:border-slate-800 flex items-center justify-between">
+        <div
+          onClick={() => setShowAmounts(!showAmounts)}
+          className="glass-panel p-4 rounded-3xl border border-slate-200 dark:border-slate-800 flex items-center justify-between cursor-pointer hover:border-rose-400/50 transition-all select-none group"
+        >
           <div>
             <div className="flex items-center gap-1.5 mb-1">
               <span className="text-xs text-slate-500 dark:text-slate-400 font-bold uppercase tracking-wider">
                 {t.total_debt}
               </span>
-              <button
-                onClick={() => setShowAmounts(!showAmounts)}
-                className="text-slate-400 hover:text-amber-500 transition-colors p-0.5"
-                title={showAmounts ? 'إخفاء المبالغ (وضع الخصوصية)' : 'إظهار المبالغ'}
-              >
-                {showAmounts ? <EyeOff className="w-3.5 h-3.5" /> : <Eye className="w-3.5 h-3.5 text-amber-500" />}
-              </button>
+              <span className="text-slate-400 group-hover:text-amber-500 transition-colors p-0.5">
+                {showAmounts ? <Eye className="w-3.5 h-3.5 text-amber-500" /> : <EyeOff className="w-3.5 h-3.5" />}
+              </span>
             </div>
             <span className="text-2xl font-black text-rose-600 dark:text-rose-400 font-mono tracking-tight dir-ltr">
               {showAmounts ? totalDebtSum.toFixed(2) : '••••••'}{' '}
               <span className="text-xs text-slate-400">{t.currency}</span>
             </span>
           </div>
-          <div className="w-12 h-12 rounded-2xl bg-rose-500/10 border border-rose-500/20 flex items-center justify-center text-rose-600 dark:text-rose-400">
+          <div className="w-12 h-12 rounded-2xl bg-rose-500/10 border border-rose-500/20 flex items-center justify-center text-rose-600 dark:text-rose-400 group-hover:scale-110 transition-transform">
             <DollarSign className="w-6 h-6" />
           </div>
         </div>

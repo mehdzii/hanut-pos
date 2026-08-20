@@ -27,6 +27,14 @@ export const CustomerDetailModal: React.FC<CustomerDetailModalProps> = ({ custom
   const [showPaymentForm, setShowPaymentForm] = useState<boolean>(false);
   const [successMsg, setSuccessMsg] = useState<string | null>(null);
 
+  // Live customer record query (auto updates modal when payment is logged)
+  const currentCustomer =
+    useLiveQuery(async () => {
+      if (!customer.id) return customer;
+      const found = await db.customers.get(customer.id);
+      return found || customer;
+    }, [customer.id]) || customer;
+
   // Fetch sales for this customer
   const sales =
     useLiveQuery(
@@ -52,14 +60,14 @@ export const CustomerDetailModal: React.FC<CustomerDetailModalProps> = ({ custom
     ) || [];
 
   const handleLogPayment = async (amountToPay: number, isFull: boolean = false) => {
-    if (amountToPay <= 0 || !customer.id) return;
+    if (amountToPay <= 0 || !currentCustomer.id) return;
 
     const now = new Date().toISOString();
 
     // Create payment log
     const paymentRecord: CreditPayment = {
       id: 'pay-' + Date.now(),
-      customer_id: customer.id,
+      customer_id: currentCustomer.id,
       amount: amountToPay,
       created_at: now,
       notes: paymentNotes || (isFull ? t.full_settlement : t.partial_payment)
@@ -68,8 +76,8 @@ export const CustomerDetailModal: React.FC<CustomerDetailModalProps> = ({ custom
     await db.credit_payments.add(paymentRecord);
 
     // Update customer total_owed balance
-    const newTotalOwed = Math.max(0, customer.total_owed - amountToPay);
-    await db.customers.update(customer.id, {
+    const newTotalOwed = Math.max(0, currentCustomer.total_owed - amountToPay);
+    await db.customers.update(currentCustomer.id, {
       total_owed: newTotalOwed,
       last_activity: now
     });
@@ -92,8 +100,8 @@ export const CustomerDetailModal: React.FC<CustomerDetailModalProps> = ({ custom
   };
 
   const isOverdue =
-    customer.total_owed > 0 &&
-    new Date().getTime() - new Date(customer.last_activity).getTime() >
+    currentCustomer.total_owed > 0 &&
+    new Date().getTime() - new Date(currentCustomer.last_activity).getTime() >
       30 * 24 * 60 * 60 * 1000;
 
   return (
@@ -108,16 +116,16 @@ export const CustomerDetailModal: React.FC<CustomerDetailModalProps> = ({ custom
             </div>
             <div>
               <h2 className="text-xl font-bold text-slate-900 dark:text-white flex items-center gap-2">
-                <span>{customer.name}</span>
+                <span>{currentCustomer.name}</span>
                 {isOverdue && (
                   <span className="text-[10px] bg-rose-500/10 text-rose-600 dark:text-rose-400 border border-rose-500/30 px-2 py-0.5 rounded-full font-bold">
                     {t.overdue_badge}
                   </span>
                 )}
               </h2>
-              {customer.phone && (
+              {currentCustomer.phone && (
                 <p className="text-xs text-slate-500 dark:text-slate-400 font-mono mt-0.5 dir-ltr text-start">
-                  📱 {customer.phone}
+                  📱 {currentCustomer.phone}
                 </p>
               )}
             </div>
@@ -137,12 +145,12 @@ export const CustomerDetailModal: React.FC<CustomerDetailModalProps> = ({ custom
               {t.total_debt}
             </span>
             <span className="text-3xl font-black text-rose-600 dark:text-rose-400 font-mono dir-ltr">
-              {customer.total_owed.toFixed(2)} <span className="text-xs text-slate-400">{t.currency}</span>
+              {currentCustomer.total_owed.toFixed(2)} <span className="text-xs text-slate-400">{t.currency}</span>
             </span>
           </div>
 
           <div className="flex items-center gap-2 w-full sm:w-auto">
-            {customer.total_owed > 0 && (
+            {currentCustomer.total_owed > 0 && (
               <>
                 <button
                   onClick={() => setShowPaymentForm(!showPaymentForm)}
@@ -152,7 +160,7 @@ export const CustomerDetailModal: React.FC<CustomerDetailModalProps> = ({ custom
                   <span>{t.log_payment}</span>
                 </button>
                 <button
-                  onClick={() => handleLogPayment(customer.total_owed, true)}
+                  onClick={() => handleLogPayment(currentCustomer.total_owed, true)}
                   className="px-4 py-2.5 rounded-xl bg-emerald-500/10 hover:bg-emerald-500/20 text-emerald-600 dark:text-emerald-400 border border-emerald-500/30 font-bold text-xs transition-all whitespace-nowrap"
                 >
                   {t.full_settlement}
