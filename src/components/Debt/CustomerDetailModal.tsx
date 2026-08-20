@@ -13,6 +13,7 @@ import {
   History,
   Receipt
 } from 'lucide-react';
+import { syncLocalDBToMongoDB } from '../../services/apiSync';
 
 interface CustomerDetailModalProps {
   customer: Customer;
@@ -72,6 +73,7 @@ export const CustomerDetailModal: React.FC<CustomerDetailModalProps> = ({ custom
       total_owed: newTotalOwed,
       last_activity: now
     });
+    syncLocalDBToMongoDB().catch(() => {});
 
     confetti({
       particleCount: 40,

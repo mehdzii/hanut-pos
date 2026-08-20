@@ -4,6 +4,7 @@ import { useLanguage } from '../../context/LanguageContext';
 import { useLiveQuery } from 'dexie-react-hooks';
 import { db } from '../../db';
 import { Search, UserPlus, CheckCircle, X, AlertCircle } from 'lucide-react';
+import { syncLocalDBToMongoDB } from '../../services/apiSync';
 
 interface CreditCheckoutModalProps {
   totalAmount: number;
@@ -53,6 +54,7 @@ export const CreditCheckoutModal: React.FC<CreditCheckoutModalProps> = ({
     };
 
     await db.customers.add(newCust);
+    syncLocalDBToMongoDB().catch(() => {});
     setSelectedCustomerId(newCust.id!);
     setShowAddForm(false);
     setNewName('');

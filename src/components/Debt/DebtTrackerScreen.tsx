@@ -17,6 +17,7 @@ import {
   Eye,
   EyeOff
 } from 'lucide-react';
+import { syncLocalDBToMongoDB } from '../../services/apiSync';
 
 export const DebtTrackerScreen: React.FC = () => {
   const { t, dir } = useLanguage();
@@ -69,6 +70,7 @@ export const DebtTrackerScreen: React.FC = () => {
     };
 
     await db.customers.add(newCust);
+    syncLocalDBToMongoDB().catch(() => {});
     setNewName('');
     setNewPhone('');
     setShowAddModal(false);
