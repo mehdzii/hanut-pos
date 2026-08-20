@@ -3,6 +3,8 @@ import { useLanguage } from '../../context/LanguageContext';
 import { useLiveQuery } from 'dexie-react-hooks';
 import { db } from '../../db';
 import type { Product } from '../../types';
+import { syncLocalDBToMongoDB } from '../../services/apiSync';
+import { useCurrency } from '../../context/CurrencyContext';
 import {
   PackagePlus,
   Search,
@@ -16,6 +18,7 @@ import {
 
 export const CatalogScreen: React.FC = () => {
   const { t, language } = useLanguage();
+  const { currencyMode, formatAmount } = useCurrency();
   const [searchTerm, setSearchQuery] = useState<string>('');
   const [selectedCategory, setSelectedCategory] = useState<string>('all');
   const [editingProduct, setEditingProduct] = useState<Product | null>(null);
@@ -55,7 +58,8 @@ export const CatalogScreen: React.FC = () => {
     setEditingProduct(product);
     setNameEn(product.name);
     setNameAr(product.name_ar);
-    setPrice(product.price.toString());
+    const displayPriceVal = currencyMode === 'RYAL' ? Math.round(product.price * 20) : product.price;
+    setPrice(displayPriceVal.toString());
     setCategory(product.category);
     setStock(product.stock_quantity.toString());
     setImageUrl(product.image_url);
@@ -76,10 +80,13 @@ export const CatalogScreen: React.FC = () => {
 
   const handleSaveProduct = async (e: React.FormEvent) => {
     e.preventDefault();
-    const priceVal = parseFloat(price);
+    const inputPriceVal = parseFloat(price);
     const stockVal = parseInt(stock, 10);
 
-    if (isNaN(priceVal) || priceVal <= 0 || !nameAr.trim()) return;
+    if (isNaN(inputPriceVal) || inputPriceVal <= 0 || !nameAr.trim()) return;
+
+    // Convert to base MAD for storage if entered in Ryal mode
+    const priceVal = currencyMode === 'RYAL' ? inputPriceVal / 20 : inputPriceVal;
 
     const finalImage =
       imageUrl.trim() ||
@@ -110,6 +117,7 @@ export const CatalogScreen: React.FC = () => {
       await db.products.add(newProd);
     }
 
+    syncLocalDBToMongoDB().catch(() => {});
     setIsAddModalOpen(false);
   };
 
@@ -202,7 +210,7 @@ export const CatalogScreen: React.FC = () => {
                   <p className="text-[11px] text-slate-500 dark:text-slate-400 truncate">{subName}</p>
                   <div className="mt-1 flex items-center gap-2 text-xs">
                     <span className="font-black text-emerald-600 dark:text-emerald-400 font-mono dir-ltr">
-                      {product.price.toFixed(2)} {t.currency}
+                      {formatAmount(product.price)}
                     </span>
                     <span className="text-slate-400">•</span>
                     <span className="text-slate-500 dark:text-slate-400">{product.stock_quantity} قطعة بالمخزون</span>
@@ -332,7 +340,9 @@ export const CatalogScreen: React.FC = () => {
               </div>
 
               <div>
-                <label className="text-xs text-slate-500 dark:text-slate-400 block mb-1">{t.price_label} *</label>
+                <label className="text-xs text-slate-500 dark:text-slate-400 block mb-1">
+                  السعر بـ ({currencyMode === 'RYAL' ? 'الريال Ryal' : 'الدرهم MAD'}) *
+                </label>
                 <input
                   type="number"
                   step="0.5"
