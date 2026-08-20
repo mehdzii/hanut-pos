@@ -92,30 +92,43 @@ export const CatalogScreen: React.FC = () => {
       imageUrl.trim() ||
       'https://images.unsplash.com/photo-1542838132-92c53300491e?w=400&auto=format&fit=crop&q=80';
 
+    const finalProduct: Product = editingProduct && editingProduct.id
+      ? {
+          ...editingProduct,
+          name: nameEn.trim() || nameAr.trim(),
+          name_ar: nameAr.trim(),
+          price: priceVal,
+          category,
+          stock_quantity: isNaN(stockVal) ? 0 : stockVal,
+          image_url: finalImage
+        }
+      : {
+          id: 'prod-' + Date.now(),
+          name: nameEn.trim() || nameAr.trim(),
+          name_ar: nameAr.trim(),
+          price: priceVal,
+          category,
+          stock_quantity: isNaN(stockVal) ? 30 : stockVal,
+          image_url: finalImage,
+          times_sold_total: 0,
+          times_sold_recent: 0,
+          created_at: new Date().toISOString()
+        };
+
     if (editingProduct && editingProduct.id) {
-      await db.products.update(editingProduct.id, {
-        name: nameEn.trim() || nameAr.trim(),
-        name_ar: nameAr.trim(),
-        price: priceVal,
-        category,
-        stock_quantity: isNaN(stockVal) ? 0 : stockVal,
-        image_url: finalImage
-      });
+      await db.products.update(editingProduct.id, finalProduct);
     } else {
-      const newProd: Product = {
-        id: 'prod-' + Date.now(),
-        name: nameEn.trim() || nameAr.trim(),
-        name_ar: nameAr.trim(),
-        price: priceVal,
-        category,
-        stock_quantity: isNaN(stockVal) ? 30 : stockVal,
-        image_url: finalImage,
-        times_sold_total: 0,
-        times_sold_recent: 0,
-        created_at: new Date().toISOString()
-      };
-      await db.products.add(newProd);
+      await db.products.add(finalProduct);
     }
+
+    // Direct POST to Cloud Server for instant 100% guarantee across all devices
+    try {
+      await fetch('https://hanut-server.vercel.app/api/products', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(finalProduct)
+      });
+    } catch (err) {}
 
     syncLocalDBToMongoDB().catch(() => {});
     setIsAddModalOpen(false);
@@ -124,6 +137,10 @@ export const CatalogScreen: React.FC = () => {
   const handleDeleteProduct = async (id: string) => {
     if (window.confirm(t.confirm_delete_product)) {
       await db.products.delete(id);
+      try {
+        await fetch(`https://hanut-server.vercel.app/api/products/${id}`, { method: 'DELETE' });
+      } catch (err) {}
+      syncLocalDBToMongoDB().catch(() => {});
     }
   };
 
