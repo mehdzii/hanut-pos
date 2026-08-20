@@ -33,6 +33,7 @@ export const POSScreen: React.FC = () => {
     activeCart,
     addItem,
     updateQuantity,
+    removeItem,
     undoLastTap,
     clearActiveCart,
     activeCartTotal,
@@ -298,6 +299,7 @@ export const POSScreen: React.FC = () => {
                       quantityInCart={cartItem ? cartItem.quantity : 0}
                       onTap={addItem}
                       onUpdateQty={updateQuantity}
+                      onRemoveAll={removeItem}
                     />
                   );
                 })}
@@ -325,6 +327,7 @@ export const POSScreen: React.FC = () => {
                       quantityInCart={cartItem ? cartItem.quantity : 0}
                       onTap={addItem}
                       onUpdateQty={updateQuantity}
+                      onRemoveAll={removeItem}
                     />
                   );
                 })}

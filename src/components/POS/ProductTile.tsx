@@ -2,13 +2,14 @@ import React, { useState } from 'react';
 import type { Product } from '../../types';
 import { useLanguage } from '../../context/LanguageContext';
 import { useCurrency } from '../../context/CurrencyContext';
-import { Plus, Minus, Flame } from 'lucide-react';
+import { Plus, Minus, Flame, X } from 'lucide-react';
 
 interface ProductTileProps {
   product: Product;
   quantityInCart: number;
   onTap: (product: Product) => void;
   onUpdateQty: (productId: string, delta: number) => void;
+  onRemoveAll?: (productId: string) => void;
   isPopular?: boolean;
 }
 
@@ -17,6 +18,7 @@ export const ProductTile: React.FC<ProductTileProps> = ({
   quantityInCart,
   onTap,
   onUpdateQty,
+  onRemoveAll,
   isPopular
 }) => {
   const { language, t } = useLanguage();
@@ -42,11 +44,25 @@ export const ProductTile: React.FC<ProductTileProps> = ({
       }`}
     >
       {/* Popular Glow Badge */}
-      {isPopular && (
+      {isPopular && quantityInCart === 0 && (
         <div className="absolute top-2 start-2 z-10 bg-gradient-to-r from-amber-500 to-orange-500 text-white dark:text-slate-950 text-[10px] font-black px-2 py-0.5 rounded-full flex items-center gap-1 shadow-md">
           <Flame className="w-3 h-3 fill-current" />
           <span>{t.popular}</span>
         </div>
+      )}
+
+      {/* 1-Tap Remove All Quantity X Button */}
+      {quantityInCart > 0 && onRemoveAll && (
+        <button
+          onClick={(e) => {
+            e.stopPropagation();
+            onRemoveAll(product.id!);
+          }}
+          className="absolute top-2 start-2 z-20 bg-rose-600 hover:bg-rose-500 text-white w-7 h-7 rounded-full flex items-center justify-center shadow-lg shadow-rose-600/30 transition-all active:scale-90 cursor-pointer"
+          title="إلغاء وإزالة جميع الكمية من السلة"
+        >
+          <X className="w-4 h-4 stroke-[3]" />
+        </button>
       )}
 
       {/* Cart Quantity Badge */}
