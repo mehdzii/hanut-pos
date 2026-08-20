@@ -12,12 +12,17 @@ import { CatalogScreen } from './components/Catalog/CatalogScreen';
 import { ReportsScreen } from './components/Reports/ReportsScreen';
 import { SettingsScreen } from './components/Settings/SettingsScreen';
 
+import { syncCloudToLocalDB } from './services/apiSync';
+
 const MainApp: React.FC = () => {
   const { isAuthenticated } = useAuth();
   const [activeTab, setActiveTab] = useState<ActiveTab>('pos');
 
   useEffect(() => {
     initAndSeedDatabase();
+    syncCloudToLocalDB();
+    const interval = setInterval(syncCloudToLocalDB, 5000);
+    return () => clearInterval(interval);
   }, []);
 
   return (

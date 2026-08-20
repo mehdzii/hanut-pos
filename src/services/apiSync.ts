@@ -29,3 +29,48 @@ export async function syncLocalDBToMongoDB(): Promise<boolean> {
     return false;
   }
 }
+
+export async function syncCloudToLocalDB(): Promise<boolean> {
+  try {
+    const resCusts = await fetch(`${API_BASE_URL}/customers`);
+    const resProds = await fetch(`${API_BASE_URL}/products`);
+    const resSales = await fetch(`${API_BASE_URL}/sales`);
+
+    if (!resCusts.ok || !resProds.ok || !resSales.ok) return false;
+
+    const cloudCusts = await resCusts.json();
+    const cloudProds = await resProds.json();
+    const cloudSales = await resSales.json();
+
+    if (cloudCusts && Array.isArray(cloudCusts) && cloudCusts.length > 0) {
+      for (const c of cloudCusts) {
+        const { _id, __v, createdAt, updatedAt, ...cust } = c;
+        if (cust.id) {
+          await db.customers.put(cust);
+        }
+      }
+    }
+
+    if (cloudProds && Array.isArray(cloudProds) && cloudProds.length > 0) {
+      for (const p of cloudProds) {
+        const { _id, __v, createdAt, updatedAt, ...prod } = p;
+        if (prod.id) {
+          await db.products.put(prod);
+        }
+      }
+    }
+
+    if (cloudSales && Array.isArray(cloudSales) && cloudSales.length > 0) {
+      for (const s of cloudSales) {
+        const { _id, __v, createdAt, updatedAt, ...sale } = s;
+        if (sale.id) {
+          await db.sales.put(sale);
+        }
+      }
+    }
+
+    return true;
+  } catch (err) {
+    return false;
+  }
+}
