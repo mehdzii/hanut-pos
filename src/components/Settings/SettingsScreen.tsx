@@ -15,7 +15,8 @@ import {
   Moon,
   MessageCircle,
   FileSpreadsheet,
-  Check
+  Check,
+  RefreshCw
 } from 'lucide-react';
 
 export const SettingsScreen: React.FC = () => {
@@ -254,21 +255,51 @@ export const SettingsScreen: React.FC = () => {
     }
   };
 
+  const handlePullFreshCloudData = async () => {
+    try {
+      const resProds = await fetch('https://hanut-server.vercel.app/api/products');
+      const resCusts = await fetch('https://hanut-server.vercel.app/api/customers');
+      const resSales = await fetch('https://hanut-server.vercel.app/api/sales');
+
+      const cloudProds = await resProds.json();
+      const cloudCusts = await resCusts.json();
+      const cloudSales = await resSales.json();
+
+      await db.products.clear();
+      await db.customers.clear();
+      await db.sales.clear();
+      await db.credit_payments.clear();
+
+      if (cloudProds && Array.isArray(cloudProds) && cloudProds.length > 0) {
+        await db.products.bulkAdd(cloudProds.map(({ _id, __v, createdAt, updatedAt, ...p }: any) => p));
+      }
+      if (cloudCusts && Array.isArray(cloudCusts) && cloudCusts.length > 0) {
+        await db.customers.bulkAdd(cloudCusts.map(({ _id, __v, createdAt, updatedAt, ...c }: any) => c));
+      }
+      if (cloudSales && Array.isArray(cloudSales) && cloudSales.length > 0) {
+        await db.sales.bulkAdd(cloudSales.map(({ _id, __v, createdAt, updatedAt, ...s }: any) => s));
+      }
+
+      setBackupMsg('تمت مزامنة البيانات النظيفة من السحابة بنجاح! ☁️✨');
+      setTimeout(() => setBackupMsg(null), 3000);
+    } catch (err) {
+      alert('خطأ في الاتصال بسحابة MongoDB');
+    }
+  };
+
   return (
     <div className="space-y-4 max-w-4xl mx-auto pb-6">
       
-      {/* RICH AUTOMATIC WHATSAPP REPORTING + FILE ATTACHMENT */}
-      <div className="glass-panel p-6 rounded-3xl border border-emerald-500/40 space-y-4">
+      {/* EXPORT & CLOUD SYNC SETTINGS */}
+      <div className="glass-panel p-6 rounded-3xl border border-slate-200 dark:border-slate-800 space-y-4">
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-3">
             <div className="w-10 h-10 rounded-2xl bg-emerald-500/10 border border-emerald-500/30 flex items-center justify-center text-emerald-600 dark:text-emerald-400">
-              <MessageCircle className="w-5 h-5" />
+              <Download className="w-5 h-5" />
             </div>
             <div>
-              <h3 className="font-bold text-base text-slate-900 dark:text-slate-100">إرسال التقرير والبيانات الشاملة إلى WhatsApp 📲</h3>
-              <p className="text-xs text-slate-500 dark:text-slate-400">
-                مرتبط تلقائياً برقم هاتفك: <span className="font-bold font-mono text-emerald-600 dark:text-emerald-400 dir-ltr">0717393850</span>
-              </p>
+              <h3 className="font-bold text-base text-slate-900 dark:text-slate-100">النسخ الاحتياطي والمزامنة السحابية</h3>
+              <p className="text-xs text-slate-500 dark:text-slate-400">مزامنة سحابية وإرسال التقارير التلقائية إلى الواتساب</p>
             </div>
           </div>
 
@@ -284,13 +315,23 @@ export const SettingsScreen: React.FC = () => {
           </div>
         )}
 
-        <button
-          onClick={handleRichWhatsAppShare}
-          className="w-full py-4 px-4 rounded-2xl bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-500 hover:to-teal-500 text-white font-black text-sm shadow-lg shadow-emerald-500/20 flex items-center justify-center gap-2 transition-all active:scale-95"
-        >
-          <MessageCircle className="w-5 h-5" />
-          <span>إرسال التقرير الشامل + ملف قاعدة البيانات لـ (0717393850) 📲</span>
-        </button>
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+          <button
+            onClick={handlePullFreshCloudData}
+            className="w-full py-3.5 px-4 rounded-2xl bg-sky-500/10 hover:bg-sky-500/20 text-sky-600 dark:text-sky-400 border border-sky-500/30 font-bold text-xs flex items-center justify-center gap-2 transition-all"
+          >
+            <RefreshCw className="w-4 h-4" />
+            <span>مزامنة وجلب البيانات النظيفة من السحابة ☁️</span>
+          </button>
+
+          <button
+            onClick={handleRichWhatsAppShare}
+            className="w-full py-3.5 px-4 rounded-2xl bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-500 hover:to-teal-500 text-white font-bold text-xs shadow-lg shadow-emerald-500/20 flex items-center justify-center gap-2 transition-all active:scale-95"
+          >
+            <MessageCircle className="w-4 h-4" />
+            <span>تقرير WhatsApp شامل (0717393850) 📲</span>
+          </button>
+        </div>
       </div>
 
       {/* THEME SELECTION CARD */}
