@@ -20,6 +20,7 @@ import {
   X,
   ChevronUp
 } from 'lucide-react';
+import { syncLocalDBToMongoDB } from '../../services/apiSync';
 
 export const POSScreen: React.FC = () => {
   const { t } = useLanguage();
@@ -123,6 +124,7 @@ export const POSScreen: React.FC = () => {
     setShowCartDrawer(false);
     triggerCelebration();
     showToast(t.sale_completed);
+    syncLocalDBToMongoDB().catch(() => {});
   };
 
   // Complete Credit Payment
@@ -176,7 +178,8 @@ export const POSScreen: React.FC = () => {
     setShowCreditModal(false);
     setShowCartDrawer(false);
     triggerCelebration();
-    showToast(`تم تسديد الدين على حساب ${customer.name} بنجاح!`);
+    showToast(`تم تسجيل الدين على حساب ${customer.name} بنجاح!`);
+    syncLocalDBToMongoDB().catch(() => {});
   };
 
   const categories = [
